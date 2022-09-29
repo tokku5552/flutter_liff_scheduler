@@ -6,19 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_line_liff/flutter_line_liff.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:duration_picker/duration_picker.dart';
-
-class Affair {
-  Affair(this.title, this.time, this.period, this.summary, this.description) {}
-  String title;
-  DateTime time;
-  Duration period;
-  String summary;
-  String description;
-}
+import 'pageAffair.dart';
+import 'AffairsStore.dart';
 
 // 以下は表示機能実装の為の仮のデータ。
 // GASに実装されたWeb APIを通してイベント情報の、GAS側への書き込みとGAS側からの読み出しを行うコードを実装予定。
-List<Affair> affairs = [
+List<Affair> dummyAffairs = [
   Affair("公園掃除", DateTime(2022, 10, 2, 0, 0, 0), const Duration(hours: 2),
       "いつもの作業", "最近参加者が少ないので、なるべく参加するようにしてください。"),
   Affair("火の用心", DateTime(2022, 10, 3, 20, 0, 0), const Duration(hours: 1),
@@ -32,12 +25,14 @@ List<Affair> affairs = [
   Affair("新年会", DateTime(2023, 1, 20, 18, 30, 0), const Duration(hours: 2),
       "来年はやるよ", "場所はいつもの大漁節2階。参加費用は大人3000円子ども1000円です。"),
 ];
-Affair editAffair = Affair("", DateTime.now(), Duration(hours: 2), "", "");
 
 String groupId = '';
 
 Future<void> main() async {
-  await dotenv.load(fileName: 'env');
+  for (Affair a in dummyAffairs) {
+    AffairsStore().add(a);
+  }
+  await dotenv.load(fileName: '.env');
   String id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
 
   // liff用JavaqScriptライブラリをJS()を用いて直接利用するつもりでしたが、JS()の理解が難しかったので、時間を節約するためにflutter_line_liffパッケージをを使用しました
@@ -110,139 +105,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final _loremIpsum =
       '''Lorem ipsum is typically a corrupted version of 'De finibus bonorum et malorum', a 1st century BC text by the Roman statesman and philosopher Cicero, with words altered, added, and removed to make it nonsensical and improper Latin.''';
 
-  EditDialog(BuildContext context, int idx) async {
-    DateTime localTime = editAffair.time.toLocal();
-    await showDialog<void>(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-            content: SingleChildScrollView(
-                child: ListBody(
-              children: <Widget>[
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text("表題: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Container(
-                    margin: EdgeInsets.only(left: 50),
-                    child: TextField(
-                      controller: TextEditingController(text: editAffair.title),
-                      onChanged: (value) {
-                        editAffair.title = value;
-                      },
-                      decoration: InputDecoration(hintText: 'ここに表題を入力してください'),
-                    ),
-                  ),
-                ]),
-                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                  Text("行事日時: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                  TextButton(
-                    onPressed: () {
-                      DatePicker.showDateTimePicker(context,
-                          showTitleActions: true,
-                          minTime:
-                              DateTime(DateTime.now().year - 2, 1, 1, 0, 0),
-                          maxTime:
-                              DateTime(DateTime.now().year + 2, 12, 31, 23, 59),
-                          onConfirm: (date) {
-                        setState(() {
-                          editAffair.time = date;
-                          localTime = editAffair.time.toLocal();
-                        });
-                      }, locale: LocaleType.jp);
-                    },
-                    child: Text(
-                        '${localTime.year}/${localTime.month}/${localTime.day} ${localTime.hour}:${localTime.minute}',
-                        style: _contentStyle),
-                  ),
-                ]),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text("行事時間: ",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    TextButton(
-                      onPressed: () async {
-                        var resultingDuration = await showDurationPicker(
-                          context: context,
-                          initialTime: editAffair.period,
-                        );
-                        if (resultingDuration != null) {
-                          setState(() {
-                            editAffair.period = resultingDuration;
-                          });
-                        }
-                      },
-                      child: Text("${editAffair.period.inMinutes}分間",
-                          style: _contentStyle),
-                    )
-                  ],
-                ),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text("簡単な説明:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Container(
-                    margin: EdgeInsets.only(left: 50),
-                    child: TextField(
-                      controller:
-                          TextEditingController(text: editAffair.summary),
-                      onChanged: (value) {
-                        editAffair.summary = value;
-                      },
-                      keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      decoration: InputDecoration(
-                        hintText: 'ここに簡単な説明を入力してください',
-                      ),
-                    ),
-                  ),
-                ]),
-                SizedBox(height: 5),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text("丁寧な説明:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Container(
-                    margin: EdgeInsets.only(left: 50),
-                    child: TextField(
-                      controller:
-                          TextEditingController(text: editAffair.description),
-                      onChanged: (value) {
-                        editAffair.description = value;
-                      },
-                      keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      decoration: InputDecoration(
-                        hintText: 'ここに丁寧な説明を入力してください',
-                      ),
-                    ),
-                  ),
-                ]),
-              ],
-            )),
-            actions: <Widget>[
-              TextButton(
-                child: idx == -1 ? Text('追加') : Text('編集'),
-                onPressed: () {
-                  setState(() {
-                    if (idx == -1) {
-                      affairs.add(editAffair);
-                    } else {
-                      affairs[idx] = editAffair;
-                    }
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                child: Text('キャンセル'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              )
-            ],
-          );
-        });
-  }
-
   AccordionSection GenAccordionSection(int idx) {
-    DateTime local = affairs[idx].time.toLocal();
+    DateTime local = AffairsStore().get(idx).time.toLocal();
     return AccordionSection(
       isOpen: false,
       index: idx,
@@ -251,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
       headerBackgroundColor: Colors.lightBlue[100],
       headerBackgroundColorOpened: Colors.lightBlue,
       header: Text(
-          '${local.year}/${local.month}/${local.day} ${local.hour}:${local.minute} ${affairs[idx].title}',
+          '${local.year}/${local.month}/${local.day} ${local.hour}:${local.minute} ${AffairsStore().get(idx).title}',
           style: _headerStyle),
       content: Container(
         child: Column(
@@ -259,20 +123,21 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text("行事時間: ", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text("${affairs[idx].period.inMinutes}分間"),
+              Text("${AffairsStore().get(idx).period.inMinutes}分間"),
             ]),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text("簡単な説明:", style: TextStyle(fontWeight: FontWeight.bold)),
               Container(
                 margin: EdgeInsets.only(left: 50),
-                child: Text("${affairs[idx].summary}", style: _contentStyle),
+                child: Text("${AffairsStore().get(idx).summary}",
+                    style: _contentStyle),
               ),
             ]),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text("丁寧な説明:", style: TextStyle(fontWeight: FontWeight.bold)),
               Container(
                 margin: EdgeInsets.only(left: 50),
-                child: Text("${affairs[idx].description}"),
+                child: Text("${AffairsStore().get(idx).description}"),
               ),
             ]),
             Row(
@@ -280,15 +145,21 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 TextButton.icon(
                     onPressed: () {
-                      editAffair = affairs[idx];
-                      EditDialog(context, idx);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PageAffair(idx, title: '行事内容'),
+                        ),
+                      ).then((value) {
+                        setState(() {});
+                      });
                     },
                     icon: Icon(Icons.edit),
                     label: Text("編集")),
                 TextButton.icon(
                     onPressed: () {
                       setState(() {
-                        affairs.removeAt(idx);
+                        AffairsStore().removeAt(idx);
                       });
                     },
                     icon: Icon(Icons.delete),
@@ -307,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<AccordionSection> GenAccordionList() {
     List<AccordionSection> list = <AccordionSection>[];
-    for (int i = 0; i < affairs.length; i++) {
+    for (int i = 0; i < AffairsStore().length; i++) {
       list.add(GenAccordionSection(i));
     }
     return list;
@@ -324,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.lightBlue,
-        //foregroundColor: Colors.black,
+        foregroundColor: Colors.black,
         title: Text(widget.title),
       ),
       body: Center(
@@ -341,13 +212,19 @@ class _MyHomePageState extends State<MyHomePage> {
       )),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          editAffair = Affair("", DateTime.now(), Duration(hours: 2), "", "");
-          EditDialog(context, -1);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PageAffair(-1, title: '行事内容'),
+            ),
+          ).then((value) {
+            setState(() {});
+          });
         },
         tooltip: '行事追加',
         mini: true,
-        child: const Icon(Icons.event),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        child: Icon(Icons.event),
+      ),
     );
   }
 }
