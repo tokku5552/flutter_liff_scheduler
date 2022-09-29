@@ -1,8 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:accordion/accordion.dart';
+import 'package:accordion/controllers.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_line_liff/flutter_line_liff.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:duration_picker/duration_picker.dart';
+
+class Affair {
+  Affair(this.title, this.time, this.period, this.summary, this.description) {}
+  String title;
+  DateTime time;
+  Duration period;
+  String summary;
+  String description;
+}
+
+// 以下は表示機能実装の為の仮のデータ。
+// GASに実装されたWeb APIを通してイベント情報の、GAS側への書き込みとGAS側からの読み出しを行うコードを実装予定。
+List<Affair> affairs = [
+  Affair("公園掃除", DateTime(2022, 10, 2, 0, 0, 0), const Duration(hours: 2),
+      "いつもの作業", "最近参加者が少ないので、なるべく参加するようにしてください。"),
+  Affair("火の用心", DateTime(2022, 10, 3, 20, 0, 0), const Duration(hours: 1),
+      "防災週間です", "3丁目と4丁目を見回ります。いつもの蛍光服でご参加下さい。"),
+  Affair("合唱練習", DateTime(2022, 10, 4, 10, 30, 0), const Duration(hours: 2),
+      "わかくさ幼稚園の運動会で合唱を披露します", "子どもたちに喜んでもらえるよう、しっかり練習しましょう。"),
+  Affair("運動会", DateTime(2022, 10, 20, 8, 30, 0), const Duration(hours: 4),
+      "わかくさ幼稚園運動会", "年に一度の大運動会開催！　合唱団のメンバーは必ず参加してください。\n合唱は10:00から"),
+  Affair("忘年会", DateTime(2022, 11, 23, 19, 0, 0), const Duration(hours: 2),
+      "今年はやるよ", "コロナ禍で開催を止めていたけど、もう我慢できない！ 場所は大漁節2階。会話はマスクを付けて行ってください。"),
+  Affair("新年会", DateTime(2023, 1, 20, 18, 30, 0), const Duration(hours: 2),
+      "来年はやるよ", "場所はいつもの大漁節2階。参加費用は大人3000円子ども1000円です。"),
+];
+Affair editAffair = Affair("", DateTime.now(), Duration(hours: 2), "", "");
+
+String groupId = '';
 
 Future<void> main() async {
-  await dotenv.load(fileName: "env");
+  await dotenv.load(fileName: 'env');
+  String id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
+
+  // liff用JavaqScriptライブラリをJS()を用いて直接利用するつもりでしたが、JS()の理解が難しかったので、時間を節約するためにflutter_line_liffパッケージをを使用しました
+  await FlutterLineLiff().init(
+    config: Config(liffId: id),
+    errorCallback: (error) {
+      // TODO: エラーメッセージを表示する。
+      // その後、アプリを強制終了させる。
+    },
+  );
+  Context? liffContext = FlutterLineLiff().context;
+  if (liffContext != null) {
+    if (liffContext.type == 'group') {
+      groupId = liffContext.groupId ?? '';
+    }
+  }
   runApp(const MyApp());
 }
 
@@ -13,7 +64,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'グループトーク内行事共有',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -26,7 +77,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: '行事一覧'),
     );
   }
 }
@@ -50,17 +101,216 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final _headerStyle = const TextStyle(
+      color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold);
+  final _contentStyleHeader = const TextStyle(
+      color: Color(0xff999999), fontSize: 14, fontWeight: FontWeight.w700);
+  final _contentStyle = const TextStyle(
+      color: Color(0xff999999), fontSize: 14, fontWeight: FontWeight.normal);
+  final _loremIpsum =
+      '''Lorem ipsum is typically a corrupted version of 'De finibus bonorum et malorum', a 1st century BC text by the Roman statesman and philosopher Cicero, with words altered, added, and removed to make it nonsensical and improper Latin.''';
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  EditDialog(BuildContext context, int idx) async {
+    DateTime localTime = editAffair.time.toLocal();
+    await showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+            content: SingleChildScrollView(
+                child: ListBody(
+              children: <Widget>[
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text("表題: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Container(
+                    margin: EdgeInsets.only(left: 50),
+                    child: TextField(
+                      controller: TextEditingController(text: editAffair.title),
+                      onChanged: (value) {
+                        editAffair.title = value;
+                      },
+                      decoration: InputDecoration(hintText: 'ここに表題を入力してください'),
+                    ),
+                  ),
+                ]),
+                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                  Text("行事日時: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  TextButton(
+                    onPressed: () {
+                      DatePicker.showDateTimePicker(context,
+                          showTitleActions: true,
+                          minTime:
+                              DateTime(DateTime.now().year - 2, 1, 1, 0, 0),
+                          maxTime:
+                              DateTime(DateTime.now().year + 2, 12, 31, 23, 59),
+                          onConfirm: (date) {
+                        setState(() {
+                          editAffair.time = date;
+                          localTime = editAffair.time.toLocal();
+                        });
+                      }, locale: LocaleType.jp);
+                    },
+                    child: Text(
+                        '${localTime.year}/${localTime.month}/${localTime.day} ${localTime.hour}:${localTime.minute}',
+                        style: _contentStyle),
+                  ),
+                ]),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("行事時間: ",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextButton(
+                      onPressed: () async {
+                        var resultingDuration = await showDurationPicker(
+                          context: context,
+                          initialTime: editAffair.period,
+                        );
+                        if (resultingDuration != null) {
+                          setState(() {
+                            editAffair.period = resultingDuration;
+                          });
+                        }
+                      },
+                      child: Text("${editAffair.period.inMinutes}分間",
+                          style: _contentStyle),
+                    )
+                  ],
+                ),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text("簡単な説明:", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Container(
+                    margin: EdgeInsets.only(left: 50),
+                    child: TextField(
+                      controller:
+                          TextEditingController(text: editAffair.summary),
+                      onChanged: (value) {
+                        editAffair.summary = value;
+                      },
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        hintText: 'ここに簡単な説明を入力してください',
+                      ),
+                    ),
+                  ),
+                ]),
+                SizedBox(height: 5),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text("丁寧な説明:", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Container(
+                    margin: EdgeInsets.only(left: 50),
+                    child: TextField(
+                      controller:
+                          TextEditingController(text: editAffair.description),
+                      onChanged: (value) {
+                        editAffair.description = value;
+                      },
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        hintText: 'ここに丁寧な説明を入力してください',
+                      ),
+                    ),
+                  ),
+                ]),
+              ],
+            )),
+            actions: <Widget>[
+              TextButton(
+                child: idx == -1 ? Text('追加') : Text('編集'),
+                onPressed: () {
+                  setState(() {
+                    if (idx == -1) {
+                      affairs.add(editAffair);
+                    } else {
+                      affairs[idx] = editAffair;
+                    }
+                  });
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('キャンセル'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+  }
+
+  AccordionSection GenAccordionSection(int idx) {
+    DateTime local = affairs[idx].time.toLocal();
+    return AccordionSection(
+      isOpen: false,
+      index: idx,
+      leftIcon: const Icon(Icons.event, color: Colors.black),
+      rightIcon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+      headerBackgroundColor: Colors.lightBlue[100],
+      headerBackgroundColorOpened: Colors.lightBlue,
+      header: Text(
+          '${local.year}/${local.month}/${local.day} ${local.hour}:${local.minute} ${affairs[idx].title}',
+          style: _headerStyle),
+      content: Container(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text("行事時間: ", style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("${affairs[idx].period.inMinutes}分間"),
+            ]),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text("簡単な説明:", style: TextStyle(fontWeight: FontWeight.bold)),
+              Container(
+                margin: EdgeInsets.only(left: 50),
+                child: Text("${affairs[idx].summary}", style: _contentStyle),
+              ),
+            ]),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text("丁寧な説明:", style: TextStyle(fontWeight: FontWeight.bold)),
+              Container(
+                margin: EdgeInsets.only(left: 50),
+                child: Text("${affairs[idx].description}"),
+              ),
+            ]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                    onPressed: () {
+                      editAffair = affairs[idx];
+                      EditDialog(context, idx);
+                    },
+                    icon: Icon(Icons.edit),
+                    label: Text("編集")),
+                TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        affairs.removeAt(idx);
+                      });
+                    },
+                    icon: Icon(Icons.delete),
+                    label: Text("削除")),
+              ],
+            )
+          ],
+        ),
+      ),
+      contentHorizontalPadding: 20,
+      contentBorderWidth: 1,
+      // onOpenSection: () => print('onOpenSection ...'),
+      // onCloseSection: () => print('onCloseSection ...'),));
+    );
+  }
+
+  List<AccordionSection> GenAccordionList() {
+    List<AccordionSection> list = <AccordionSection>[];
+    for (int i = 0; i < affairs.length; i++) {
+      list.add(GenAccordionSection(i));
+    }
+    return list;
   }
 
   @override
@@ -73,44 +323,30 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
+        backgroundColor: Colors.lightBlue,
+        //foregroundColor: Colors.black,
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
+          child: Accordion(
+        maxOpenSections: 2,
+        headerBackgroundColor: Colors.blue,
+        headerBackgroundColorOpened: Colors.amber,
+        scaleWhenAnimating: true,
+        openAndCloseAnimation: true,
+        headerPadding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
+        sectionOpeningHapticFeedback: SectionHapticFeedback.heavy,
+        sectionClosingHapticFeedback: SectionHapticFeedback.light,
+        children: GenAccordionList(),
+      )),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: () {
+          editAffair = Affair("", DateTime.now(), Duration(hours: 2), "", "");
+          EditDialog(context, -1);
+        },
+        tooltip: '行事追加',
+        mini: true,
+        child: const Icon(Icons.event),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
