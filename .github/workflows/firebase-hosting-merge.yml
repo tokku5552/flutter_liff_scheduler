@@ -21,8 +21,7 @@ jobs:
       - name: Create env
         run: |
           touch env
-#          設定した環境変数を記載
-#          echo HOGE_KEY = ${{secrets.HOGE_KEY}} >> env
+          echo ${{secrets.ENV}} >> env
 
       - run: flutter build web
       - uses: FirebaseExtended/action-hosting-deploy@v0
