@@ -2,6 +2,8 @@
 
 Flutter webとliffを組み合わせてスケジュール共有アプリを作るサンプルプロジェクト
 
+![architecture.drawio.png](./docs/architecture.drawio.png)
+
 ## 開発環境
 ```
 % fvm flutter --version
