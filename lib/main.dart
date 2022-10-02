@@ -32,7 +32,7 @@ Future<void> main() async {
   for (Affair a in dummyAffairs) {
     AffairsStore().add(a);
   }
-  await dotenv.load(fileName: '.env');
+  await dotenv.load(fileName: 'env');
   String id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
 
   // liff用JavaqScriptライブラリをJS()を用いて直接利用するつもりでしたが、JS()の理解が難しかったので、時間を節約するためにflutter_line_liffパッケージをを使用しました
