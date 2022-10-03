@@ -3,11 +3,15 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:accordion/accordion.dart';
 import 'package:accordion/controllers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_liff_scheduler/js/main_js.dart';
 import 'package:flutter_line_liff/flutter_line_liff.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:duration_picker/duration_picker.dart';
+import 'package:js/js.dart';
+import 'package:js/js_util.dart';
 import 'pageAffair.dart';
 import 'AffairsStore.dart';
+import 'js/flutter_liff.dart' as liff;
 
 // 以下は表示機能実装の為の仮のデータ。
 // GASに実装されたWeb APIを通してイベント情報の、GAS側への書き込みとGAS側からの読み出しを行うコードを実装予定。
@@ -36,12 +40,21 @@ Future<void> main() async {
   String id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
 
   // liff用JavaqScriptライブラリをJS()を用いて直接利用するつもりでしたが、JS()の理解が難しかったので、時間を節約するためにflutter_line_liffパッケージをを使用しました
-  await FlutterLineLiff().init(
-    config: Config(liffId: id),
-    errorCallback: (error) {
-      // TODO: エラーメッセージを表示する。
-      // その後、アプリを強制終了させる。
-    },
+  // await FlutterLineLiff().init(
+  //   config: Config(liffId: id),
+  //   errorCallback: (error) {
+  //     // TODO: エラーメッセージを表示する。
+  //     // その後、アプリを強制終了させる。
+  //   },
+  // );
+  await promiseToFuture(
+    liff.init(
+      liff.Config(
+        liffID: id,
+        successCallback: allowInterop(() => log('liff init success!!!')),
+        errorCallback: allowInterop((e) => log('liff init failed with $e')),
+      ),
+    ),
   );
   Context? liffContext = FlutterLineLiff().context;
   if (liffContext != null) {
@@ -55,21 +68,11 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'グループトーク内行事共有',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: '行事一覧'),
@@ -79,15 +82,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -186,12 +180,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.lightBlue,
