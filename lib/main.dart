@@ -1,17 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:accordion/accordion.dart';
 import 'package:accordion/controllers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_liff_scheduler/js/main_js.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_line_liff/flutter_line_liff.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:duration_picker/duration_picker.dart';
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
-import 'pageAffair.dart';
+
 import 'AffairsStore.dart';
 import 'js/flutter_liff.dart' as liff;
+import 'js/main_js.dart';
+import 'pageAffair.dart';
 
 // 以下は表示機能実装の為の仮のデータ。
 // GASに実装されたWeb APIを通してイベント情報の、GAS側への書き込みとGAS側からの読み出しを行うコードを実装予定。
