@@ -1,15 +1,15 @@
-async function init(liff_id, successCallback, errorCallback){
+async function init(config){
     console.log("init called")
-    console.log(`liff ID: ${liff_id}`)
+    console.log(`liff ID: ${config["liffID"]}`)
     await liff.init({
-        liffId: liff_id,
+        liffId: config["liffID"],
         withLoginOnEternalBrowser: true,
     })
     .then(() => {
-        successCallback()
+        config["successCallback"]()
      })
      .catch((err) => {
-         errorCallback(err)
+        config["errorCallback"](err)
      });
 }
 
