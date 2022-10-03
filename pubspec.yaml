@@ -42,6 +42,7 @@ dependencies:
   http: ^0.13.5
   flutter_datetime_picker: ^1.5.1
   duration_picker: ^1.0.0
+  js: ^0.6.4
 
 dev_dependencies:
   flutter_test:
