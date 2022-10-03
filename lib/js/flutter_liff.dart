@@ -15,7 +15,7 @@ external String getLiffID();
 @JS('getAccessToken')
 external Object getAccessToken();
 
-// 名前付き引数を渡したい為、クラスを作成
+// 名前付き引数を渡したい為、クラスを定義
 @JS()
 @anonymous
 class Config {

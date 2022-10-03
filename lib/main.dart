@@ -39,23 +39,18 @@ Future<void> main() async {
   await dotenv.load(fileName: 'env');
   String id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
 
-  // liff用JavaqScriptライブラリをJS()を用いて直接利用するつもりでしたが、JS()の理解が難しかったので、時間を節約するためにflutter_line_liffパッケージをを使用しました
-  // await FlutterLineLiff().init(
-  //   config: Config(liffId: id),
-  //   errorCallback: (error) {
-  //     // TODO: エラーメッセージを表示する。
-  //     // その後、アプリを強制終了させる。
-  //   },
-  // );
+  // PromiseをFutureに変換する為、promiseToFuture()でラップ
   await promiseToFuture(
     liff.init(
       liff.Config(
         liffID: id,
+        // js側に関数を渡す為、allowInterop()でラップ
         successCallback: allowInterop(() => log('liff init success!!!')),
         errorCallback: allowInterop((e) => log('liff init failed with $e')),
       ),
     ),
   );
+
   Context? liffContext = FlutterLineLiff().context;
   if (liffContext != null) {
     if (liffContext.type == 'group') {
