@@ -5,6 +5,7 @@ Flutter webとliffを組み合わせてスケジュール共有アプリを作�
 ![architecture.drawio.png](./docs/architecture.drawio.png)
 
 ## 開発環境
+
 ```
 % fvm flutter --version
 Flutter 3.3.1 • channel stable • https://github.com/flutter/flutter.git
@@ -14,7 +15,9 @@ Tools • Dart 2.18.0 • DevTools 2.15.0
 ```
 
 ## ローカル環境での実行方法
+
 - fvmでflutterのバージョンをあわせる
+
 ```bash
 fvm install
 
@@ -24,11 +27,13 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 ```
 
 - デバッグ実行
-```
+
+```bash
 flutter run -d web-server --web-port 8080
 ```
 
 - ngrokでの一時公開(flutter runしているターミナルとは別ターミナルで実施)
+
 ```bash
 ngrok http 8080
 
