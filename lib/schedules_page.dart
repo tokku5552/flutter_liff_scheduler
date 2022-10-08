@@ -13,21 +13,21 @@ class SchedulesPage extends StatefulWidget {
 }
 
 class SchedulesPageState extends State<SchedulesPage> {
-  Future<List<Schedule>> _fetchSchedules = fetchSchedules();
+  Future<List<Schedule>> _schedules = fetchSchedules();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('スケジュール一覧')),
       body: FutureBuilder<List<Schedule>>(
-        future: _fetchSchedules,
+        future: _schedules,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             final schedules = snapshot.data ?? [];
             return RefreshIndicator(
               onRefresh: () async {
                 setState(() {
-                  _fetchSchedules = fetchSchedules();
+                  _schedules = fetchSchedules();
                 });
               },
               child: ListView.builder(
@@ -61,7 +61,7 @@ class SchedulesPageState extends State<SchedulesPage> {
           );
           // 元の画面に戻った際にスケジュール一覧を取得・描画し直す。
           setState(() {
-            _fetchSchedules = fetchSchedules();
+            _schedules = fetchSchedules();
           });
         },
       ),
