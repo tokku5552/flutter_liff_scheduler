@@ -26,9 +26,9 @@ class SchedulesPageState extends State<SchedulesPage> {
             final schedules = snapshot.data ?? [];
             return RefreshIndicator(
               onRefresh: () async {
-                setState(() {
-                  _schedules = fetchSchedules();
-                });
+                _schedules = fetchSchedules();
+                await _schedules;
+                setState(() {});
               },
               child: ListView.builder(
                 itemCount: schedules.length,
@@ -60,9 +60,8 @@ class SchedulesPageState extends State<SchedulesPage> {
             ),
           );
           // 元の画面に戻った際にスケジュール一覧を取得・描画し直す。
-          setState(() {
-            _schedules = fetchSchedules();
-          });
+          _schedules = fetchSchedules();
+          setState(() {});
         },
       ),
     );
