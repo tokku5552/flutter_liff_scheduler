@@ -1,6 +1,6 @@
 # flutter_liff_scheduler
 
-Flutter webとliffを組み合わせてスケジュール共有アプリを作るサンプルプロジェクト
+Flutter webとliffを組み合わせてスケジュール共有アプリを作るサンプルプロジェクト。
 
 ![architecture.drawio.png](./docs/architecture.drawio.png)
 
