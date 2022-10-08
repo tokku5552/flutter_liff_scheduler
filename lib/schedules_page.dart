@@ -20,8 +20,6 @@ class SchedulesPageState extends State<SchedulesPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('スケジュール一覧')),
       body: FutureBuilder<List<Schedule>>(
-        // NOTE: https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html の
-        // Flutter Widget of the Week の用例に従っている。
         future: _fetchSchedules,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
