@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 import 'http_request.dart';
 import 'schedule.dart';
 
 /// スケジュール一覧ページ。
-class SchedulesPage extends StatelessWidget {
+class SchedulesPage extends StatefulWidget {
   const SchedulesPage({super.key});
+
+  @override
+  SchedulesPageState createState() => SchedulesPageState();
+}
+
+class SchedulesPageState extends State<SchedulesPage> {
+  Future<List<Schedule>> _fetchSchedules = fetchSchedules();
 
   @override
   Widget build(BuildContext context) {
@@ -14,21 +22,30 @@ class SchedulesPage extends StatelessWidget {
       body: FutureBuilder<List<Schedule>>(
         // NOTE: https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html の
         // Flutter Widget of the Week の用例に従っている。
-        future: fetchSchedules(),
+        future: _fetchSchedules,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             final schedules = snapshot.data ?? [];
-            return ListView.builder(
-              itemCount: schedules.length,
-              itemBuilder: (context, index) {
-                final schedule = schedules[index];
-                return ListTile(
-                  leading: Icon(
-                    schedule.isNotified ? Icons.check_box_outlined : Icons.check_box_outline_blank,
-                  ),
-                  title: Text(schedule.title),
-                );
+            return RefreshIndicator(
+              onRefresh: () async {
+                setState(() {
+                  _fetchSchedules = fetchSchedules();
+                });
               },
+              child: ListView.builder(
+                itemCount: schedules.length,
+                itemBuilder: (context, index) {
+                  final schedule = schedules[index];
+                  return ListTile(
+                    leading: Icon(
+                      schedule.isNotified
+                          ? Icons.check_box_outlined
+                          : Icons.check_box_outline_blank,
+                    ),
+                    title: Text(schedule.title),
+                  );
+                },
+              ),
             );
           }
           return const Center(child: CircularProgressIndicator());
@@ -36,12 +53,122 @@ class SchedulesPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () => createSchedule(
-          // TODO: ハードコードをやめてユーザーの入力を受け付ける。
-          title: 'aaa',
-          dueDateTime: DateTime(2022, 10, 8),
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CreateSchedulePage(),
+              fullscreenDialog: true,
+            ),
+          );
+          // 元の画面に戻った際にスケジュール一覧を取得・描画し直す。
+          setState(() {
+            _fetchSchedules = fetchSchedules();
+          });
+        },
+      ),
+    );
+  }
+}
+
+/// スケジュールを作成するページ。
+class CreateSchedulePage extends StatefulWidget {
+  const CreateSchedulePage({super.key});
+
+  @override
+  CreateSchedulePageState createState() => CreateSchedulePageState();
+}
+
+class CreateSchedulePageState extends State<CreateSchedulePage> {
+  late TextEditingController titleController;
+  late TextEditingController dueDateTimeController;
+  DateTime? dueDateTime;
+  bool submitting = false;
+
+  @override
+  void initState() {
+    titleController = TextEditingController();
+    dueDateTimeController = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    dueDateTimeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('スケジュール登録')),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'スケジュール名',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                TextField(
+                  controller: dueDateTimeController,
+                  readOnly: true,
+                  onTap: () => DatePicker.showDateTimePicker(
+                    context,
+                    minTime: DateTime.now(),
+                    onConfirm: (dateTime) => setState(() {
+                      dueDateTime = dateTime;
+                      dueDateTimeController.text = dateTime.toIso8601String();
+                    }),
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: '日時',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () => submitting ? null : _createSchedule(),
+                  child: Text(submitting ? '通信中...' : 'スケジュールを登録'),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
+
+  /// スケジュールを登録する。
+  Future<void> _createSchedule() async {
+    final navigator = Navigator.of(context);
+    final title = titleController.value.text;
+    if (title.isEmpty) {
+      _showSnackBar('タイトルを入力してください。');
+      return;
+    }
+    if (dueDateTime == null) {
+      _showSnackBar('日時を入力してください。');
+      return;
+    }
+    setState(() => submitting = true);
+    try {
+      await createSchedule(title: title, dueDateTime: dueDateTime!);
+    } finally {
+      setState(() => submitting = false);
+    }
+    navigator.pop();
+  }
+
+  /// SnackBar を表示する。
+  void _showSnackBar(String text) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 }
