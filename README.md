@@ -6,7 +6,7 @@ Flutter webとliffを組み合わせてスケジュール共有アプリを作�
 
 ## 開発環境
 
-```bash
+```
 % fvm flutter --version
 Flutter 3.3.1 • channel stable • https://github.com/flutter/flutter.git
 Framework • revision 4f9d92fbbd (2 weeks ago) • 2022-09-06 17:54:53 -0700
