@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_liff_scheduler/schedule.dart';
 
-/// スケジュール一覧ページ
+import 'http_request.dart';
+import 'schedule.dart';
+
+/// スケジュール一覧ページ。
 class SchedulesPage extends StatelessWidget {
   const SchedulesPage({super.key});
 
@@ -9,68 +11,37 @@ class SchedulesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('スケジュール一覧')),
-      body: ListView.builder(
-        itemCount: _schedules.length,
-        itemBuilder: (context, index) {
-          final schedule = _schedules[index];
-          return ListTile(
-            leading: Icon(
-              schedule.isNotified ? Icons.check_box_outlined : Icons.check_box_outline_blank,
-            ),
-            title: Text(schedule.title),
-          );
+      body: FutureBuilder<List<Schedule>>(
+        // NOTE: https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html の
+        // Flutter Widget of the Week の用例に従っている。
+        future: fetchSchedules(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            final schedules = snapshot.data ?? [];
+            return ListView.builder(
+              itemCount: schedules.length,
+              itemBuilder: (context, index) {
+                final schedule = schedules[index];
+                return ListTile(
+                  leading: Icon(
+                    schedule.isNotified ? Icons.check_box_outlined : Icons.check_box_outline_blank,
+                  ),
+                  title: Text(schedule.title),
+                );
+              },
+            );
+          }
+          return const Center(child: CircularProgressIndicator());
         },
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () {
-          // TODO: スケジュールを作成できるようにする
-        },
+        onPressed: () => createSchedule(
+          // TODO: ハードコードをやめてユーザーの入力を受け付ける。
+          title: 'aaa',
+          dueDateTime: DateTime(2022, 10, 8),
+        ),
       ),
     );
   }
 }
-
-/// TODO: ハードコード。GET リクエストができるようになったら消す。
-final _schedules = <Schedule>[
-  for (final json in _jsons) Schedule.fromJson(json),
-];
-
-/// TODO: ハードコード。GET リクエストができるようになったら消す。
-final _jsons = <Map<String, dynamic>>[
-  {
-    'scheduleId': '1',
-    'title': 'タイトル 1',
-    'createdAt': '2022-10-01 00:00:00',
-    'dueDateTime': '2022-10-01 00:00:00',
-    'isNotified': false,
-  },
-  {
-    'scheduleId': '2',
-    'title': 'タイトル 2',
-    'createdAt': '2022-10-01 00:00:00',
-    'dueDateTime': '2022-10-02 00:00:00',
-    'isNotified': false,
-  },
-  {
-    'scheduleId': '3',
-    'title': 'タイトル 3',
-    'createdAt': '2022-10-01 00:00:00',
-    'dueDateTime': '2022-10-03 00:00:00',
-    'isNotified': false,
-  },
-  {
-    'scheduleId': '4',
-    'title': 'タイトル 4',
-    'createdAt': '2022-10-01 00:00:00',
-    'dueDateTime': '2022-10-04 00:00:00',
-    'isNotified': false,
-  },
-  {
-    'scheduleId': '5',
-    'title': 'タイトル 5',
-    'createdAt': '2022-10-01 00:00:00',
-    'dueDateTime': '2022-10-05 00:00:00',
-    'isNotified': false,
-  },
-];
