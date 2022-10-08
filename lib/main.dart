@@ -10,7 +10,7 @@ String groupId = '';
 Future<void> main() async {
   await dotenv.load(fileName: 'env');
   // TODO: flutter_line_liff パッケージの使用の廃止を検討する。
-  String id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
+  final id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
   await FlutterLineLiff().init(
     config: Config(liffId: id),
     errorCallback: (error) {},
