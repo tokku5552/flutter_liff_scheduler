@@ -12,6 +12,9 @@ external Object getUserID();
 @JS('getLiffID')
 external String getLiffID();
 
+@JS('getGroupID')
+external String getGroupID();
+
 @JS('getAccessToken')
 external Object getAccessToken();
 

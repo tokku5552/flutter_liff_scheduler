@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_line_liff/flutter_line_liff.dart';
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
 
@@ -27,12 +26,7 @@ Future<void> main() async {
       ),
     ),
   );
-  await FlutterLineLiff().init(
-    config: Config(liffId: id),
-    errorCallback: (error) {},
-  );
-  final liffContext = FlutterLineLiff().context;
-  groupId = liffContext?.groupId ?? '';
+  groupId = await promiseToFuture(liff.getGroupID()) ?? '';
   runApp(const App());
 }
 

@@ -25,6 +25,14 @@ async function getUserID(){
    return profile["userId"]
 }
 
+async function getGroupID(){
+    console.log("getGroupID called")
+    console.log(`liff ID is ${liff.id}`)
+   const context = await liff.getContext()
+   console.log(`context: ${JSON.stringify(context, null, 2)}`)
+   return context["groupId"]
+}
+
 async function getAccessToken(){
     console.log("getAccessToken called")
     console.log(`liff ID is ${liff.id}`)
