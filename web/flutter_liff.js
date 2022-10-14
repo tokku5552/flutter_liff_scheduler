@@ -1,8 +1,8 @@
 async function init(config){
     console.log("init called")
-    console.log(`liff Id: ${config["liffID"]}`)
+    console.log(`liff Id: ${config["liffId"]}`)
     await liff.init({
-        liffId: config["liffID"],
+        liffId: config["liffId"],
         withLoginOnEternalBrowser: true,
     })
     .then(() => {
