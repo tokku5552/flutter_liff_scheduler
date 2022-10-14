@@ -19,14 +19,14 @@ Future<void> main() async {
   await promiseToFuture(
     liff.init(
       liff.Config(
-        liffID: id,
+        liffId: id,
         // js側に関数を渡す為、allowInterop()でラップ
         successCallback: allowInterop(() => log('liff init success!!!')),
         errorCallback: allowInterop((e) => log('liff init failed with $e')),
       ),
     ),
   );
-  groupId = await promiseToFuture(liff.getGroupID()) ?? '';
+  groupId = await promiseToFuture(liff.getGroupId()) ?? '';
   runApp(const App());
 }
 

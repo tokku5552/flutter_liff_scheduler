@@ -6,14 +6,14 @@ import 'package:js/js.dart';
 @JS('init')
 external Object init(Config config);
 
-@JS('getUserID')
-external Object getUserID();
+@JS('getUserId')
+external Object getUserId();
 
-@JS('getLiffID')
-external String getLiffID();
+@JS('getLiffId')
+external String getLiffId();
 
-@JS('getGroupID')
-external String getGroupID();
+@JS('getGroupId')
+external String getGroupId();
 
 @JS('getAccessToken')
 external Object getAccessToken();
@@ -22,11 +22,11 @@ external Object getAccessToken();
 @JS()
 @anonymous
 class Config {
-  external String get liffID;
+  external String get liffId;
   external Function? get successCallback;
   external Function(dynamic error)? get errorCallback;
   external factory Config({
-    String liffID,
+    String liffId,
     Function? successCallback,
     Function(dynamic error)? errorCallback,
   });
