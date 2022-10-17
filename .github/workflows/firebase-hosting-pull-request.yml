@@ -16,10 +16,10 @@ jobs:
       - name: Download Flutter packages
         run: flutter pub get
 
-      - name: Create env
+      - name: Create .env
         run: |
-          touch env
-          echo ${{secrets.ENV}} >> env
+          touch .env
+          echo ${{secrets.ENV}} >> .env
 
       - run: flutter build web
       - uses: FirebaseExtended/action-hosting-deploy@v0

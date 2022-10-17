@@ -21,11 +21,11 @@ jobs:
       - name: Download Flutter packages
         run: flutter pub get
 
-      - name: Create env
+      - name: Create .env
         run: |
-          touch env
-          echo $LIFFID >> env
-          echo $GAS_URL >> env
+          touch .env
+          echo $LIFFID >> .env
+          echo $GAS_URL >> .env
 
       - run: flutter build web
       - uses: FirebaseExtended/action-hosting-deploy@v0
