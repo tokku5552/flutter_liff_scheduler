@@ -6,6 +6,9 @@ name: Deploy to Firebase Hosting on merge
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    env:
+      LIFFID: ${{ secrets.LIFFID }} 
+      GAS_URL: ${{ secrets.GAS_URL }}
     steps:
       - uses: actions/checkout@v2
 
@@ -18,10 +21,11 @@ jobs:
       - name: Download Flutter packages
         run: flutter pub get
 
-      - name: Create env
+      - name: Create .env
         run: |
-          touch env
-          echo ${{secrets.ENV}} >> env
+          touch .env
+          echo $LIFFID >> .env
+          echo $GAS_URL >> .env
 
       - run: flutter build web
       - uses: FirebaseExtended/action-hosting-deploy@v0

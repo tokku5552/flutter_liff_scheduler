@@ -12,7 +12,7 @@ import 'schedules_page.dart';
 String groupId = '';
 
 Future<void> main() async {
-  await dotenv.load(fileName: 'env');
+  await dotenv.load(fileName: '.env');
   final id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
 
   // PromiseをFutureに変換する為、promiseToFuture()でラップ
