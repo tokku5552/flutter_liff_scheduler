@@ -12,8 +12,8 @@ dependencies:
     sdk: flutter
   flutter_datetime_picker: ^1.5.1
   flutter_dotenv: ^5.0.1
-  flutter_line_liff: ^0.0.3
   http: ^0.13.5
+  js: ^0.6.4
 
 dev_dependencies:
   flutter_test:

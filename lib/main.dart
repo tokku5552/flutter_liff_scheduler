@@ -1,8 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_line_liff/flutter_line_liff.dart';
+import 'package:js/js.dart';
+import 'package:js/js_util.dart';
 
+import 'js/flutter_liff.dart' as liff;
+import 'js/main_js.dart';
 import 'schedules_page.dart';
 
 /// TODO: groupId をグローバルに書くのをやめることを検討する。
@@ -10,14 +13,20 @@ String groupId = '';
 
 Future<void> main() async {
   await dotenv.load(fileName: '.env');
-  // TODO: flutter_line_liff パッケージの使用の廃止を検討する。
   final id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
-  await FlutterLineLiff().init(
-    config: Config(liffId: id),
-    errorCallback: (error) {},
+
+  // PromiseをFutureに変換する為、promiseToFuture()でラップ
+  await promiseToFuture(
+    liff.init(
+      liff.Config(
+        liffId: id,
+        // js側に関数を渡す為、allowInterop()でラップ
+        successCallback: allowInterop(() => log('liff init success!!!')),
+        errorCallback: allowInterop((e) => log('liff init failed with $e')),
+      ),
+    ),
   );
-  final liffContext = FlutterLineLiff().context;
-  groupId = liffContext?.groupId ?? '';
+  groupId = await promiseToFuture(liff.getGroupId()) ?? '';
   runApp(const App());
 }
 
