@@ -1,8 +1,8 @@
 name: Deploy to Firebase Hosting on PR
-'on': workflow_dispatch
+'on': pull_request
 jobs:
   build_and_preview:
-    # if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
+    if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,10 +21,10 @@ jobs:
         with:
           envkey_LIFFID: ${{ secrets.TEST_LIFFID }}
           envkey_GAS_URL: ${{ secrets.TEST_GAS_URL }}
+          
       - run: flutter build web
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_FLUTTER_LIFF_SCHEDULER }}'
-          channelId: live
           projectId: flutter-liff-scheduler
