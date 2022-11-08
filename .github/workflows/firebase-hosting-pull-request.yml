@@ -17,10 +17,10 @@ jobs:
         run: flutter pub get
 
       - name: Create .env
-        run: |
-          touch .env
-          echo ${{secrets.ENV}} >> .env
-
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_LIFFID: ${{ secrets.TEST_LIFFID }}
+          envkey_GAS_URL: ${{ secrets.TEST_GAS_URL }}
       - run: flutter build web
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
