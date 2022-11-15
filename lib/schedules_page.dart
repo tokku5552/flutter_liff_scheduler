@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 import 'http_request.dart';
+import 'main.dart';
 import 'schedule.dart';
 
 /// スケジュール一覧ページ。
@@ -30,19 +31,26 @@ class SchedulesPageState extends State<SchedulesPage> {
                 await _schedules;
                 setState(() {});
               },
-              child: ListView.builder(
-                itemCount: schedules.length,
-                itemBuilder: (context, index) {
-                  final schedule = schedules[index];
-                  return ListTile(
-                    leading: Icon(
-                      schedule.isNotified
-                          ? Icons.check_box_outlined
-                          : Icons.check_box_outline_blank,
+              child: Column(
+                children: [
+                  Text(userId),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: schedules.length,
+                      itemBuilder: (context, index) {
+                        final schedule = schedules[index];
+                        return ListTile(
+                          leading: Icon(
+                            schedule.isNotified
+                                ? Icons.check_box_outlined
+                                : Icons.check_box_outline_blank,
+                          ),
+                          title: Text(schedule.title),
+                        );
+                      },
                     ),
-                    title: Text(schedule.title),
-                  );
-                },
+                  ),
+                ],
               ),
             );
           }

@@ -8,8 +8,8 @@ import 'js/flutter_liff.dart' as liff;
 import 'js/main_js.dart';
 import 'schedules_page.dart';
 
-/// TODO: groupId をグローバルに書くのをやめることを検討する。
-String groupId = '';
+/// TODO: userId をグローバルに書くのをやめることを検討する。
+String userId = '';
 
 Future<void> main() async {
   await dotenv.load(fileName: '.env');
@@ -26,7 +26,7 @@ Future<void> main() async {
       ),
     ),
   );
-  groupId = await promiseToFuture(liff.getGroupId()) ?? '';
+  userId = await promiseToFuture(liff.getUserId()) ?? '';
   runApp(const App());
 }
 
