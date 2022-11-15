@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
+import 'main.dart';
 import 'schedule.dart';
 
-/// Get Schedules API (GAS) をコールして、スケジュール一覧を取得する。
+/// Get Schedules API (GAS) をコールして、指定したユーザーのスケジュール一覧を取得する。
 Future<List<Schedule>> fetchSchedules() async {
   final response = await http.get(
-    _gasUri,
+    _gasUri(addUserIdToQueryParameter: true),
     headers: <String, String>{
       'Accept': 'application/json',
     },
@@ -26,8 +27,9 @@ Future<void> createSchedule({
   required DateTime dueDateTime,
 }) async {
   final response = await http.post(
-    _gasUri,
+    _gasUri(),
     body: <String, dynamic>{
+      'userId': userId,
       'title': title,
       'dueDateTime': dueDateTime.toIso8601String(),
     },
@@ -40,7 +42,15 @@ Future<void> createSchedule({
 }
 
 /// dotenv に記述した GAS の WEB App のエンドポイントの Uri を返す。
-Uri get _gasUri => Uri.parse(dotenv.get('GAS_URL'));
+/// addUserIdToQueryParameter: true とすると、Uri に userId={userId} の
+/// クエリパラメータを付加する。
+Uri _gasUri({bool addUserIdToQueryParameter = false}) {
+  final gasUrl = dotenv.get('GAS_URL');
+  if (gasUrl.isEmpty) {
+    throw UnimplementedError('.env に GAS_URL を指定してください。');
+  }
+  return Uri.parse('$gasUrl${addUserIdToQueryParameter ? '?userId=$userId' : ''}');
+}
 
 /// デバッグ用に HTTP リクエスト・レスポンスの概要をコンソールに出力する。
 void _log(http.Response response) {
