@@ -6,7 +6,7 @@ import 'package:js/js_util.dart';
 
 import 'js/flutter_liff.dart' as liff;
 import 'js/main_js.dart';
-import 'schedules_page.dart';
+import 'ui/schedule.dart';
 
 /// LIFF アプリとして起動すると、main() の中で 上書きされるユーザー ID。
 String userId = '';

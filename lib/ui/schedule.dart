@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
-import 'http_request.dart';
-import 'schedule.dart';
+import '../http_request.dart';
+import '../schedule.dart';
 
 /// スケジュール一覧ページ。
 class SchedulesPage extends StatefulWidget {
