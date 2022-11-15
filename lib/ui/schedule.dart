@@ -155,6 +155,7 @@ class CreateSchedulePageState extends State<CreateSchedulePage> {
                   readOnly: true,
                   onTap: () => DatePicker.showDateTimePicker(
                     context,
+                    currentTime: dueDateTime ?? DateTime.now(),
                     minTime: DateTime.now(),
                     onConfirm: (dateTime) => setState(() {
                       dueDateTime = dateTime;
