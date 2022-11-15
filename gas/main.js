@@ -197,11 +197,12 @@ function doGet(e) {
  * スケジュールを登録する。
  */
 function doPost(e) {
-  const rowNumber = '= ROW() - 1'
+  const rowNumber = '= ROW()'
   const userId = e.parameter.userId
   const title = e.parameter.title
   const dueDateTime = new Date(e.parameter.dueDateTime)
-  const values = { rowNumber, userId, title, dueDateTime, isNotified: false }
+  const isNotified = false
+  const values = { rowNumber, userId, title, dueDateTime, isNotified }
 
   sheet = getSchedulesSheet()
   sheet.appendRow(Object.values(values))
