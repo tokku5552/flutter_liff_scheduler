@@ -8,28 +8,31 @@ import 'js/flutter_liff.dart' as liff;
 import 'js/main_js.dart';
 import 'schedules_page.dart';
 
-/// TODO: userId をグローバルに書くのをやめることを検討する。
+/// LIFF アプリとして起動すると、main() の中で 上書きされるユーザー ID。
 String userId = '';
 
 Future<void> main() async {
   await dotenv.load(fileName: '.env');
-  final id = dotenv.get('LIFFID', fallback: 'LIFFID not found');
-
-  // PromiseをFutureに変換する為、promiseToFuture()でラップ
+  final liffId = dotenv.get('LIFFID', fallback: '.env に LIFFID を指定してください。');
+  // JS の Promise を Dart の Future に変換するために promiseToFuture() でラップする。
   await promiseToFuture(
     liff.init(
       liff.Config(
-        liffId: id,
-        // js側に関数を渡す為、allowInterop()でラップ
-        successCallback: allowInterop(() => log('liff init success!!!')),
-        errorCallback: allowInterop((e) => log('liff init failed with $e')),
+        liffId: liffId,
+        // JS に関数を渡すために allowInterop() でラップする。
+        successCallback: allowInterop(() => log('LIFF の初期化に成功しました。')),
+        errorCallback: allowInterop((e) => log('LIFF の初期化に失敗しました。$e')),
       ),
     ),
   );
+
+  // ユーザー ID を取得して上書きする。
   userId = await promiseToFuture(liff.getUserId()) ?? '';
   runApp(const App());
 }
 
+/// main() の runApp() の引数に指定するウィジェット。
+/// 中で MaterialApp を返す。
 class App extends StatelessWidget {
   const App({super.key});
 
