@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_liff_scheduler/main.dart';
 
 import '../http_request.dart';
 import '../schedule.dart';
@@ -32,6 +33,19 @@ class SchedulesPageState extends State<SchedulesPage> {
               },
               child: Column(
                 children: [
+                  if (userId.isEmpty)
+                    Container(
+                      margin: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        '⚠️ ユーザー ID を取得できていないため '
+                        'LIFF アプリとして正常に機能しない可能性があります',
+                      ),
+                    ),
                   Expanded(
                     child: ListView.builder(
                       itemCount: schedules.length,

@@ -7,7 +7,7 @@ import 'package:js/js.dart';
 external Object init(Config config);
 
 @JS('getUserId')
-external Object getUserId();
+external Object getUserId([bool ignoreError = false]);
 
 @JS('getLiffId')
 external String getLiffId();

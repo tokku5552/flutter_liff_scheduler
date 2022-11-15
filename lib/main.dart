@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -26,8 +27,8 @@ Future<void> main() async {
     ),
   );
 
-  // ユーザー ID を取得して上書きする。
-  userId = await promiseToFuture(liff.getUserId()) ?? '';
+  // デバッグモードではユーザー ID 取得のエラーを無視する。
+  userId = await promiseToFuture(liff.getUserId(kDebugMode));
   runApp(const App());
 }
 
