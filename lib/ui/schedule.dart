@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_liff_scheduler/main.dart';
+import 'package:flutter_liff_scheduler/utils/date_time.dart';
 
 import '../http_request.dart';
 import '../schedule.dart';
@@ -52,12 +53,26 @@ class SchedulesPageState extends State<SchedulesPage> {
                       itemBuilder: (context, index) {
                         final schedule = schedules[index];
                         return ListTile(
-                          leading: Icon(
-                            schedule.isNotified
-                                ? Icons.check_box_outlined
-                                : Icons.check_box_outline_blank,
+                          leading: Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: schedule.isNotified ? Colors.grey : Colors.blue,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              schedule.isNotified ? '通知済み' : '通知予定',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                            ),
                           ),
-                          title: Text(schedule.title),
+                          title: Text(
+                            schedule.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(schedule.dueDateTime.toJapaneseFormat),
                         );
                       },
                     ),
@@ -143,7 +158,7 @@ class CreateSchedulePageState extends State<CreateSchedulePage> {
                     minTime: DateTime.now(),
                     onConfirm: (dateTime) => setState(() {
                       dueDateTime = dateTime;
-                      dueDateTimeController.text = dateTime.toIso8601String();
+                      dueDateTimeController.text = dateTime.toJapaneseFormat;
                     }),
                   ),
                   decoration: const InputDecoration(
