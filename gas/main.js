@@ -150,7 +150,7 @@ function doGet(e) {
     return {
       userId: row[SCHEMA.userId.columnNumber],
       title: row[SCHEMA.title.columnNumber],
-      dueDateTime: row[SCHEMA.dueDateTime.columnNumber],
+      dueDateTime: row[SCHEMA.dueDateTime.columnNumber].getTime(),
       isNotified: row[SCHEMA.isNotified.columnNumber],
     }
   })

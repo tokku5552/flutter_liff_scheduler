@@ -22,7 +22,7 @@ class Schedule {
   factory Schedule.fromJson(Map<String, dynamic> json) => Schedule(
         userId: (json['userId'] ?? '') as String,
         title: (json['title'] ?? '') as String,
-        dueDateTime: DateTime.parse(json['dueDateTime']),
+        dueDateTime: DateTime.fromMillisecondsSinceEpoch(json['dueDateTime']),
         isNotified: json['isNotified'] ?? false,
       );
 }
