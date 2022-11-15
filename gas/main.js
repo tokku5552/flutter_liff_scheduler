@@ -3,21 +3,25 @@ const SCHEDULES_SHEET_NAME = 'schedules'
 
 /** スプレッドシートのスキーマ。 */
 const SCHEMA = {
+  rowNumber: {
+    columnName: 'rowNumber',
+    columnIndex: 0,
+  },
   userId: {
     columnName: 'userId',
-    columnNumber: 0,
+    columnIndex: 1,
   },
   title: {
     columnName: 'title',
-    columnNumber: 1,
+    columnIndex: 2,
   },
   dueDateTime: {
     columnName: 'dueDateTime',
-    columnNumber: 2,
+    columnIndex: 3,
   },
   isNotified: {
     columnName: 'isNotified',
-    columnNumber: 3,
+    columnIndex: 4,
   },
 }
 
@@ -33,6 +37,7 @@ function getSchedulesSheet() {
 
 /**
  * 毎時実行して、次の 1 時間の間のスケジュールを LINE Messaging API でお知らせする。
+ * お知らせが済んだものは isNotified = true にする。
  *
  * 例：
  * この関数が、2022-11-01 09:20:00 に発火した場合、
@@ -46,23 +51,27 @@ function notifySchedules() {
     return
   }
 
+  const rowNumbers = []
   const messagesByUserId = {}
   for (const row of notificationTargetSchedules) {
-    const userId = row[SCHEMA.userId.columnNumber]
-    const message = `${row[SCHEMA.title.columnNumber]} (${row[
-      SCHEMA.dueDateTime.columnNumber
+    const userId = row[SCHEMA.userId.columnIndex]
+    const message = `${row[SCHEMA.title.columnIndex]} (${row[
+      SCHEMA.dueDateTime.columnIndex
     ].toLocaleString('ja-JP')})`
     if (userId in messagesByUserId) {
       messagesByUserId[userId].push(message)
     } else {
       messagesByUserId[userId] = [message]
     }
+    rowNumbers.push(row[SCHEMA.rowNumber.columnIndex])
   }
 
   for (const userId in messagesByUserId) {
     console.log(`userId: ${userId}, messages: ${messagesByUserId[userId]}`)
     pushMessageToUser(userId, messagesByUserId[userId])
   }
+
+  setIsNotified(rowNumbers)
 }
 
 /** スプレッドシートからスケジュールを全件取得して、dueDateTime の降順にして返す。 */
@@ -77,19 +86,28 @@ function fetchAllSchedulesFromSpreadSheet() {
   return range
     .getValues()
     .sort((a, b) =>
-      a[SCHEMA.dueDateTime.columnNumber] > b[SCHEMA.dueDateTime.columnNumber]
+      a[SCHEMA.dueDateTime.columnIndex] > b[SCHEMA.dueDateTime.columnIndex]
         ? -1
         : 1
     )
 }
 
-/** スケジュール一覧から指定したユーザー ID のものだけをフィルタして返す。 */
+/**
+ * スケジュール一覧から指定したユーザー ID のものだけをフィルタして返す。
+ * @param {string} userId
+ * @return {Schedule[]} 指定したユーザー ID のスケジュール一覧
+ */
 function fetchSchedulesByUserId(userId) {
   const schedules = fetchAllSchedulesFromSpreadSheet()
-  return schedules.filter((row) => row[SCHEMA.userId.columnNumber] === userId)
+  return schedules.filter((row) => row[SCHEMA.userId.columnIndex] === userId)
 }
 
-/** スケジュール一覧から通知のターゲットとなるものだけをフィルタして返す。 */
+/**
+ * スケジュール一覧から通知のターゲットとなるものだけをフィルタして返す。
+ * @param {Date} minDueDateTime スケジュールの対象を絞り込む dueDateTime の下限値。
+ * @param {Date} maxDueDateTime スケジュールの対象を絞り込む dueDateTime の下限値。
+ * @return {Schedule[]} 通知の対象となるスケジュール一覧。
+ */
 function fetchNotificationTargetSchedules() {
   const now = new Date()
   const schedules = fetchAllSchedulesFromSpreadSheet()
@@ -107,13 +125,17 @@ function fetchNotificationTargetSchedules() {
   )
   return schedules.filter(
     (row) =>
-      row[SCHEMA.dueDateTime.columnNumber] >= minDueDateTime &&
-      row[SCHEMA.dueDateTime.columnNumber] < maxDueDateTime &&
-      !row[SCHEMA.isNotified.columnNumber]
+      row[SCHEMA.dueDateTime.columnIndex] >= minDueDateTime &&
+      row[SCHEMA.dueDateTime.columnIndex] < maxDueDateTime &&
+      !row[SCHEMA.isNotified.columnIndex]
   )
 }
 
-/** 指定した ID のユーザーに、LINE の Messaging API でメッセージを送信する。 */
+/**
+ * 指定した ID のユーザーに、LINE の Messaging API でメッセージを送信する。
+ * @param {string} userId ユーザー ID
+ * @param {string[]} messageTexts 送信するメッセージ本文一覧
+ */
 function pushMessageToUser(userId, messageTexts) {
   UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', {
     headers: {
@@ -136,6 +158,17 @@ function pushMessageToUser(userId, messageTexts) {
 }
 
 /**
+ * 指定した行番号の isNotified フラグを true に更新する。
+ * @param {number[]} rowNumbers
+ */
+function setIsNotified(rowNumbers) {
+  for (const rowNumber of rowNumbers) {
+    sheet = getSchedulesSheet()
+    sheet.getRange(rowNumber, SCHEMA.isNotified.columnIndex + 1).setValue(true)
+  }
+}
+
+/**
  * GET API。
  * スケジュール一覧を取得する。
  */
@@ -148,10 +181,10 @@ function doGet(e) {
   const schedules = fetchSchedulesByUserId(userId)
   const body = schedules.map((row) => {
     return {
-      userId: row[SCHEMA.userId.columnNumber],
-      title: row[SCHEMA.title.columnNumber],
-      dueDateTime: row[SCHEMA.dueDateTime.columnNumber].getTime(),
-      isNotified: row[SCHEMA.isNotified.columnNumber],
+      userId: row[SCHEMA.userId.columnIndex],
+      title: row[SCHEMA.title.columnIndex],
+      dueDateTime: row[SCHEMA.dueDateTime.columnIndex].getTime(),
+      isNotified: row[SCHEMA.isNotified.columnIndex],
     }
   })
   const response = ContentService.createTextOutput(JSON.stringify(body))
@@ -164,10 +197,11 @@ function doGet(e) {
  * スケジュールを登録する。
  */
 function doPost(e) {
+  const rowNumber = '= ROW() - 1'
   const userId = e.parameter.userId
   const title = e.parameter.title
   const dueDateTime = new Date(e.parameter.dueDateTime)
-  const values = { userId, title, dueDateTime, isNotified: false }
+  const values = { rowNumber, userId, title, dueDateTime, isNotified: false }
 
   sheet = getSchedulesSheet()
   sheet.appendRow(Object.values(values))
