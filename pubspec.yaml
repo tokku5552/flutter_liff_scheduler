@@ -13,6 +13,7 @@ dependencies:
   flutter_datetime_picker: ^1.5.1
   flutter_dotenv: ^5.0.1
   http: ^0.13.5
+  intl: ^0.17.0
   js: ^0.6.4
 
 dev_dependencies:
