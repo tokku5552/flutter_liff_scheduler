@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 import 'http_request.dart';
-import 'main.dart';
 import 'schedule.dart';
 
 /// スケジュール一覧ページ。
@@ -33,7 +32,6 @@ class SchedulesPageState extends State<SchedulesPage> {
               },
               child: Column(
                 children: [
-                  Text(userId),
                   Expanded(
                     child: ListView.builder(
                       itemCount: schedules.length,
