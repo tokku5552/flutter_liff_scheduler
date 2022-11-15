@@ -153,15 +153,24 @@ class CreateSchedulePageState extends State<CreateSchedulePage> {
                 TextField(
                   controller: dueDateTimeController,
                   readOnly: true,
-                  onTap: () => DatePicker.showDateTimePicker(
-                    context,
-                    currentTime: dueDateTime ?? DateTime.now(),
-                    minTime: DateTime.now(),
-                    onConfirm: (dateTime) => setState(() {
-                      dueDateTime = dateTime;
-                      dueDateTimeController.text = dateTime.toJapaneseFormat;
-                    }),
-                  ),
+                  onTap: () async {
+                    final now = DateTime.now();
+                    final oneHourLater = DateTime(
+                      now.year,
+                      now.month,
+                      now.day,
+                      now.hour + 1,
+                    );
+                    await DatePicker.showDateTimePicker(
+                      context,
+                      currentTime: dueDateTime ?? oneHourLater,
+                      minTime: oneHourLater,
+                      onConfirm: (dateTime) => setState(() {
+                        dueDateTime = dateTime;
+                        dueDateTimeController.text = dateTime.toJapaneseFormat;
+                      }),
+                    );
+                  },
                   decoration: const InputDecoration(
                     labelText: '日時',
                     border: OutlineInputBorder(),
