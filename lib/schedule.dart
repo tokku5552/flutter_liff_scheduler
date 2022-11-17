@@ -1,24 +1,28 @@
 /// アプリで管理・操作するスケジュール。
 class Schedule {
   Schedule({
-    required this.scheduleId,
+    required this.userId,
     required this.title,
     required this.dueDateTime,
     this.isNotified = false,
-    this.createdAt,
   });
 
-  final String scheduleId;
+  /// LIFF のユーザー ID。
+  final String userId;
+
+  /// スケジュールのタイトル。
   final String title;
+
+  /// スケジュールの締め切り日時。
   final DateTime dueDateTime;
+
+  /// スケジュールを LINE Messaging API で通知済みかどうか。
   final bool isNotified;
-  final DateTime? createdAt;
 
   factory Schedule.fromJson(Map<String, dynamic> json) => Schedule(
-        scheduleId: (json['scheduleId'] ?? '') as String,
+        userId: (json['userId'] ?? '') as String,
         title: (json['title'] ?? '') as String,
-        dueDateTime: DateTime.parse(json['dueDateTime']),
+        dueDateTime: DateTime.fromMillisecondsSinceEpoch(json['dueDateTime']),
         isNotified: json['isNotified'] ?? false,
-        createdAt: DateTime.tryParse(json['createdAt']),
       );
 }

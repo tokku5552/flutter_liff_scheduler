@@ -64,3 +64,15 @@ clasp pull
 Web 画面の「Deploy > New deployment」から Web app を選択してデプロイする。
 
 2 回目以降は「Deploy > Manage deployments」から New version を反映すれば良い。
+
+## その他の設定
+
+GAS に紐づくスプレッドシートの列名とその順番はこのスプレッドシートと一致させる必要がある。
+
+<https://docs.google.com/spreadsheets/d/1n_Dem-FpKK36tJ-G5VYilWDuN0VBoDaRkvR6B2ziC7M/edit#gid=0>
+
+また、GAS の Script Properties に `CHANNEL_ACCESS_TOKEN` の名前で、対応する LINE ログインチャネルの CHANNEL_ACCESS_TOKEN を設定する。
+
+```txt
+CHANNEL_ACCESS_TOKEN=<自分の CHANNEL_ACCESS_TOKEN> 
+```
