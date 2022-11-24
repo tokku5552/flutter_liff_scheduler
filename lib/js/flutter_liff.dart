@@ -4,7 +4,7 @@ library flutter_liff;
 import 'package:js/js.dart';
 
 @JS('init')
-external Object init(Config config);
+external Object init(String liffId);
 
 @JS('getUserId')
 external Object getUserId([bool ignoreError = false]);

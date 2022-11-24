@@ -1,16 +1,8 @@
-async function init(config) {
-  console.log('init called')
-  await liff
-    .init({
-      liffId: config['liffId'],
-      withLoginOnEternalBrowser: true,
-    })
-    .then(() => {
-      config['successCallback']()
-    })
-    .catch((err) => {
-      config['errorCallback'](err)
-    })
+async function init(liffId){
+  console.log("init called")
+  await liff.init({
+      liffId: liffId,
+  })
 }
 
 function getLiffId() {
