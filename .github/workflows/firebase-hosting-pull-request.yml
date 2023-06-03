@@ -8,10 +8,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install Flutter
-        run: git clone https://github.com/flutter/flutter.git
-
-      - name: Add path
-        run: echo "$(pwd)/flutter/bin" >> $GITHUB_PATH
+        run: |
+          git clone https://github.com/flutter/flutter.git --depth 1 -b 3.3.1 "$GITHUB_WORKSPACE/_flutter"
+          echo "$GITHUB_WORKSPACE/_flutter/bin" >> $GITHUB_PATH
 
       - name: Download Flutter packages
         run: flutter pub get
